@@ -134,9 +134,10 @@ class MarteConfig():
             thread_dict["Class"] = thread_cfg[THREAD_CLASS]
             thread_dict["CPUs"] = thread_cfg[THREAD_CPUs]
             GAMs_on_thread_cfg = thread_cfg[THREAD_GAMS_CFG]
+            print(GAMs_on_thread_cfg)
             GAMs_on_thread_list = []
             for GAM in GAMs_on_thread_cfg:
-                GAMs_on_thread_list.append(GAM[0])
+                GAMs_on_thread_list.append(GAM)
             thread_dict["Functions"] = GAMs_on_thread_list
             threads_dict[thread_name] = thread_dict        
 

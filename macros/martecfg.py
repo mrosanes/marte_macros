@@ -3,8 +3,8 @@ from sardana.macroserver.msexception import UnknownEnv
 from martecfglib import MarteConfig
 
 
-# GAMTimer used as GAM by Default
-DefaultGAM = "GAMTimer"
+DefaultGAM = "GAMTimer" # GAMTimer will be used by used Default GAM
+
 
 # Functions/GAMs configuration
 inputsignal_cfg = [["InputSignal", Type.String, "Time", "Signal Name"],
@@ -17,14 +17,38 @@ outputsignal_cfg = [["OutputSignal", Type.String, "Time", "Signal Name"],
 
 gam_cfg = [["GAM", Type.String, DefaultGAM, "GAM Name"],
            ["Class", Type.String, "IOGAM", "GAM Class"],
-           ["InputSignals", inputsignal_cfg, "in", "Input Signal"],
-           ["OutputSignals", outputsignal_cfg, "out", "Output Signal"]]
+           ["InputSignals", inputsignal_cfg, None, "Input Signal"],
+           ["OutputSignals", outputsignal_cfg, None, "Output Signal"]]
 
-functions_cfg = [["Class", Type.String, "ReferenceContainer", "Functions Class"],
-                 ["GAMs", gam_cfg, "None", "GAMs Configurations"],
-                 {'min': 1, 'max': 1}]
+functions_cfg = [
+    ["Class", Type.String, "ReferenceContainer", "Functions Class"],
+    ["GAMs", gam_cfg, "None", "GAMs Configurations"],
+    {'min': 1, 'max': 1}]
 
-# States Configuration
+
+# Data Configuration
+signal_cfg = [["Signal", Type.String, "Time", "Signal Name"],
+              ["Type", Type.String, "uint32", "Type"]]
+
+timer_cfg = [["TimerName", Type.String, "Timer", "Data Timer Name"],
+             ["Class", Type.String, "LinuxTimer", "Data Timer Class"],
+             ["SleepNature", Type.String, "Default", 
+              "Sleep Nature (usually Default)"],
+             ["Signals", signal_cfg, None, "Timer Signals configuration"],
+             {'min': 1, 'max': 1}]
+
+
+data_cfg = [
+    ["Class", Type.String, "ReferenceContainer", "Data Config Class"],
+    ["DefaultDataSource", Type.String, "DDB1", "Default Data Source"],
+    ["DDB1", Type.String, "GAMDataSource", "Data Source"],
+    ["LoggerDataSource", Type.String, "LoggerDataSource", "Logger"],
+    ["Timings", Type.String, "TimingDataSource", "Timing"],
+    ["Timer", timer_cfg, None, "Data Timer Configuration"],
+    {'min': 1, 'max': 1}]
+
+
+# States Configuration: Threads Configuration
 gams_list = [["GAM", Type.String, DefaultGAM, "GAM Name"],]
 
 thread_cfg = [["ThreadName", Type.String, "Thread1", "Thread Name"],
@@ -47,6 +71,7 @@ states_cfg = [
     ["States", state_cfg, None, "States Configurations"],
     {'min': 1, 'max': 1}]
 
+
 # Scheduler Configuration
 scheduler_cfg = [
     ['Class', Type.String, "GAMScheduler", 'Scheduler Class'],
@@ -66,11 +91,11 @@ class marteconfig(Macro):
          [['AppName', Type.String, "AppTest", 'Application name'],
           ['Class', Type.String, "RealTimeApplication", 'Class name'],
           ['Functions', functions_cfg, None, 'Functions Configuration'],
-          ['Data', Type.String, "dat", 'Data Configuration'],
+          #['Data', Type.String, None, 'Data Configuration'],
+          ['Data', data_cfg, None, 'Data Configuration'],
           ['States', states_cfg, None, 'States Configuration'],
           ['Scheduler', scheduler_cfg, None, 'Scheduler Configuration']],
          None, 'List of apps'
          ]
     ]
-
 
