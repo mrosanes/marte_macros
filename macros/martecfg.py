@@ -2,24 +2,52 @@ from sardana.macroserver.macro import Macro, Type
 from sardana.macroserver.msexception import UnknownEnv
 from martecfglib import MarteConfig
 
-inputsignal_cfg = [["InputSignal", Type.String, "Time", "Signal name"],
+
+# GAMTimer used as GAM by Default
+DefaultGAM = "GAMTimer"
+
+# Functions/GAMs configuration
+inputsignal_cfg = [["InputSignal", Type.String, "Time", "Signal Name"],
                    ["DataSource", Type.String, "Timer", "Data Source"],
                    ["Type", Type.String, "uint32", "Type"]]
 
-outputsignal_cfg = [["OutputSignal", Type.String, "Time", "Signal name"],
+outputsignal_cfg = [["OutputSignal", Type.String, "Time", "Signal Name"],
                     ["DataSource", Type.String, "DDB1", "Data Source"],
                     ["Type", Type.String, "uint32", "Type"]]
 
-gam_cfg = [["GAMName", Type.String, "GAMTimer", "GAM name"],
+gam_cfg = [["GAM", Type.String, DefaultGAM, "GAM Name"],
            ["Class", Type.String, "IOGAM", "GAM Class"],
            ["InputSignals", inputsignal_cfg, "in", "Input Signal"],
            ["OutputSignals", outputsignal_cfg, "out", "Output Signal"]]
 
-function_cfg = [["Class", Type.String, "ReferenceContainer", "Functions Class"],
-                ["GAMs", gam_cfg, "None", "GAM Configurations"],
-                {'min': 1, 'max': 1}]
+functions_cfg = [["Class", Type.String, "ReferenceContainer", "Functions Class"],
+                 ["GAMs", gam_cfg, "None", "GAMs Configurations"],
+                 {'min': 1, 'max': 1}]
 
+# States Configuration
+gams_list = [["GAM", Type.String, DefaultGAM, "GAM Name"],]
 
+thread_cfg = [["ThreadName", Type.String, "Thread1", "Thread Name"],
+              ["Class", Type.String, "RealTimeThread", "Thread Class"],
+              ["CPUs", Type.String, "0x1", "State Name"],
+              ["Functions", gams_list, None, "Functions Names Dict"],
+              {'min': 1}]
+
+threads_cfg = [["Class", Type.String, "ReferenceContainer", "Threads Class"],
+               ["Threads", thread_cfg, None, "Threads Configuration"],
+               {'min': 1, 'max': 1}]
+
+state_cfg = [["StateName", Type.String, "State1", "State Name"],
+             ["Class", Type.String, "RealTimeState", "State Class"],
+             ["Threads", threads_cfg, "None", "Threads Configurations"],
+             {'min': 1}]
+
+states_cfg = [
+    ["Class", Type.String, "ReferenceContainer", "States Config Class"],
+    ["States", state_cfg, None, "States Configurations"],
+    {'min': 1, 'max': 1}]
+
+# Scheduler Configuration
 scheduler_cfg = [
     ['Class', Type.String, "GAMScheduler", 'Scheduler Class'],
     ['DataSource', Type.String, "Timings", 'Scheduler DataSource'],
@@ -35,12 +63,12 @@ class marteconfig(Macro):
     param_def = [
         ['filename', Type.Filename, "/root/hihi.txt", 'Output file'],
         ['apps', 
-         [['application', Type.String, "AppTest", 'Application name'],
-          ['class', Type.String, "RealTimeApplication", 'Class name'],
-          ['functions', function_cfg, None, 'Functions'],
-          ['data', Type.String, "dat", 'Data'],
-          ['states', Type.String, "state", 'States'],
-          ['scheduler', scheduler_cfg, None, 'Scheduler']],
+         [['AppName', Type.String, "AppTest", 'Application name'],
+          ['Class', Type.String, "RealTimeApplication", 'Class name'],
+          ['Functions', functions_cfg, None, 'Functions Configuration'],
+          ['Data', Type.String, "dat", 'Data Configuration'],
+          ['States', states_cfg, None, 'States Configuration'],
+          ['Scheduler', scheduler_cfg, None, 'Scheduler Configuration']],
          None, 'List of apps'
          ]
     ]
