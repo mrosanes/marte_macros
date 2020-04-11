@@ -86,11 +86,7 @@ if __name__ == '__main__':
                                         "Thread1",
                                         "RealTimeThread",
                                         "0x1",
-                                        [
-                                            ["GAMTimer"],
-                                            ["GAMTimer2"],
-                                            ["GAMTimer3"],
-                                        ],
+                                        ["GAMTimer", "GAMTimer2", "GAMTimer3"],
                                     ],
                                 ],
                             ],
