@@ -28,6 +28,22 @@ SIGNAL_DATASOURCE = 1
 SIGNAL_TYPE = 2
 
 
+# DATA CFG
+DATA_CLASS = 0
+DATA_DEFAULT_DS = 1
+DATA_DEFAULT_DS_CLASS = 2
+DATA_LOG_DATASOURCE_CLASS = 3
+DATA_TIMINGS_CLASS = 4
+DATA_TIMER_CFG = 5
+
+DATA_TIMER_NAME = 0
+DATA_TIMER_CLASS = 1
+DATA_TIMER_SLEEPNATURE = 2
+DATA_TIMER_SIGNALS = 3
+
+DATA_TIMER_SIGNAL_NAME = 0
+DATA_TIMER_SIGNAL_TYPE = 1
+
 # STATES CFG
 STATESCFG_CLASS = 0
 STATESCFG_STATES = 1
@@ -46,6 +62,7 @@ THREAD_GAMS_CFG = 3
 
 THREAD_GAMS = 0
 
+
 # SCHEDULER(S) CFG
 SCHEDULER_CLASS = 0
 SCHEDULER_DS = 1  # Scheduler DataSource
@@ -61,13 +78,13 @@ class MarteConfig():
         self.data = collections.OrderedDict()
         self.python_version = platform.python_version()[0]
 
+    # Functions/GAMs Congiguration Creation
     def create_signals_config(self, signals_dict, signals_cfg):
         for signal in signals_cfg:
             signal_name = signal[SIGNAL_NAME]
             signal_dict = collections.OrderedDict()
             signal_dict["DataSource"] = signal[SIGNAL_DATASOURCE]
             signal_dict["Type"] = signal[SIGNAL_TYPE]
-            
             signals_dict[signal_name] = signal_dict
             
     def create_gams_config(self, functions_dict, gams_cfg):
@@ -88,6 +105,28 @@ class MarteConfig():
             
             functions_dict[gam_name] = gam_dict
 
+    # Data Congiguration Creation
+    def create_data_signals_config(self, signals_dict, signals_cfg):
+        for signal in signals_cfg:
+            signal_name = signal[DATA_TIMER_SIGNAL_NAME]
+            signal_dict = collections.OrderedDict()
+            signal_dict["Type"] = signal[DATA_TIMER_SIGNAL_TYPE]
+            signals_dict[signal_name] = signal_dict
+
+    def create_data_timer_config(self, data_dict, data_timer_cfg):
+        data_timer_name = data_timer_cfg[DATA_TIMER_NAME]
+        data_timer_dict = collections.OrderedDict()
+        data_timer_dict["Class"] = data_timer_cfg[DATA_TIMER_CLASS]
+        data_timer_dict["SleepNature"] = data_timer_cfg[DATA_TIMER_SLEEPNATURE]
+       
+        signals_dict = collections.OrderedDict()
+        signals_cfg = data_timer_cfg[DATA_TIMER_SIGNALS]
+        self.create_data_signals_config(signals_dict, signals_cfg)
+        data_timer_dict["Signals"] = signals_dict
+        
+        data_dict[data_timer_name] = data_timer_dict 
+        
+    # States (and its Threads) Congiguration Creation    
     def create_threads_config(self, threads_dict, threads_cfg):
         for thread_cfg in threads_cfg:
             thread_name = thread_cfg[THREAD_NAME]
@@ -100,7 +139,7 @@ class MarteConfig():
                 GAMs_on_thread_list.append(GAM[0])
             thread_dict["Functions"] = GAMs_on_thread_list
             threads_dict[thread_name] = thread_dict        
-    
+
     def create_states_config(self, states_dict, states_cfg):
         for state_cfg in states_cfg:
             state_name = state_cfg[STATE_NAME]
@@ -117,29 +156,40 @@ class MarteConfig():
             
             states_dict[state_name] = state_dict
 
+    # MARTe Application Congiguration Creation
     def generate_app_config(self, app):
         app_name = app[APPNAME]
         self.data[app_name] = collections.OrderedDict()
         self.data[app_name]["Class"] = app[CLASSNAME]
         
-        # FUNCTIONS
+        # FUNCTIONS #
         functions_dict = collections.OrderedDict()
         functions_dict["Class"] = app[FUNCTIONS][0][FUNCTION_CLASS]  
         gams_cfg = app[FUNCTIONS][0][FUNCTION_GAMS]
         self.create_gams_config(functions_dict, gams_cfg)
         self.data[app_name]["Functions"] = functions_dict
-        
-        # DATA
-        self.data[app_name]["Data"] = app[DATA]
-        
-        # STATES
+
+        # DATA #
+        data_dict = collections.OrderedDict()
+        data_cfg = app[DATA][0]
+        data_dict["Class"] = data_cfg[DATA_CLASS]
+        data_dict["DefaultDataSource"] = data_cfg[DATA_DEFAULT_DS]
+        data_dict["DDB1"] = {"Class": data_cfg[DATA_DEFAULT_DS_CLASS]}
+        data_dict["LoggerDataSource"] = {
+            "Class": data_cfg[DATA_LOG_DATASOURCE_CLASS]}
+        data_dict["Timings"] = {"Class": data_cfg[DATA_TIMINGS_CLASS]}
+        datatimer_cfg = data_cfg[DATA_TIMER_CFG][0]
+        self.create_data_timer_config(data_dict, datatimer_cfg)
+        self.data[app_name]["Data"] = data_dict       
+
+        # STATES #
         states_dict = collections.OrderedDict()
         states_dict["Class"] = app[STATES][0][STATESCFG_CLASS]
         states_cfg = app[STATES][0][STATESCFG_STATES]
         self.create_states_config(states_dict, states_cfg)
         self.data[app_name]["States"] = states_dict
         
-        # SCHEDULER
+        # SCHEDULER #
         schedulers_dict = collections.OrderedDict()
         schedulers_dict["Class"] = app[SCHEDULER][0][SCHEDULER_CLASS]
         schedulers_dict["TimingDataSource"] = app[SCHEDULER][0][SCHEDULER_DS]
@@ -156,95 +206,5 @@ class MarteConfig():
         with destination as self.destination:
             self.generate_marte_cfg()
 
-
-if __name__ == '__main__':
-    
-    apps = [
-    [
-        'AppTest',  # App Name
-        'RealTimeApplication',  # Class
-        [  # functions (One note but yet it is required to be a repeat node)
-            [
-                "ReferenceContainer",
-                [
-                    [
-                        "GAMTimer",
-                        "IOGAM1",
-                        [
-                            [
-                                "Time",
-                                "Timer",
-                                "uint32",
-                            ],
-                            [
-                                "Count",
-                                "Counter",
-                                "uint32",
-                            ],
-                        ],
-                        [
-                            [
-                                "outtime",
-                                "outTimer",
-                                "float",
-                            ],
-                            [
-                                "outcount",
-                                "outCounter",
-                                "float",
-                            ],
-                        ],                        
-                    ],
-                ],
-
-            ],
-        ],
-                            
-        "data", 
-        
-
-        [  # States (One note but yet it is required to be a repeat node)
-            [
-                "ReferenceContainer",
-                [
-                    [
-                        "State1",    
-                        "RealTimeState",
-                        [
-                            [
-                                "ReferenceContainer",
-                                [
-                                    [
-                                        "Thread1",
-                                        "RealTimeThread",
-                                        "0x1",
-                                        [
-                                            ["GAMTimer"],
-                                            ["GAMTimer2"],
-                                            ["GAMTimer3"],
-                                        ],
-                                    ],
-                                ],
-                            ],
-                        ],
-                    ],
-                ],
-
-            ],
-        ],
-               
-
-        [# scheduler
-            [
-                "GAMScheduler",
-                "Timings",
-            ],
-        ],
-    ]
-    ]
-            
-    FILE_NAME = './martecfg.txt'
-    martecfg_obj = MarteConfig(FILE_NAME, apps)
-    martecfg_obj.generate_file()
 
 
