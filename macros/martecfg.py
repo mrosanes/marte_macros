@@ -86,7 +86,7 @@ class marteconfig(Macro):
         martecfg_obj.generate_file()
 
     param_def = [
-        ['filename', Type.Filename, "/root/hihi.txt", 'Output file'],
+        ['filename', Type.Filename, "/MARTe_config_filename.txt", 'Output file'],
         ['apps', 
          [['AppName', Type.String, "AppTest", 'Application name'],
           ['Class', Type.String, "RealTimeApplication", 'Class name'],
